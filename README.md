@@ -1,1 +1,1 @@
-### Resource Allocation Problem
+### Equipment Replacement Problem
