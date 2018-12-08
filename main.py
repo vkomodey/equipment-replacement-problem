@@ -1,5 +1,6 @@
 import numpy as np
-from input import p, T, g, m
+from input import equipment_price, T, support_price_g, start_age, bellman_fun, quality, build_x, f
+
 
 
 # Значения x на всех слоях(от 0 до T)
@@ -9,20 +10,10 @@ x_points = np.empty(T + 1, dtype=object)
 
 # нам удобна структура данных set, так как в ней
 # пропускаются дублирующие значения
-x_points[0] = set([m])
-B_matr = np.zeros([m+T + 1, T + 1])
+x_points[0] = set([start_age - 1])
+B_matr = np.zeros([start_age+T + 1, T + 1])
 U_values = np.empty(T, dtype=object)
 
-f_0 = lambda x, u: g(x) + p * u
-f = lambda x, u: (x + 1)*(1 - u)
-
-
-def bellman_fun(x, t, u):
-    f0 = f_0(x, u)
-    f_x_u = f(x, u)
-    B_prev = B_matr[f_x_u][t+1]
-
-    return f0 + B_prev
 
 
 for t in range(1, T+1):
@@ -38,8 +29,8 @@ last_layer_points = x_points[T]
 
 for x_point in last_layer_points:
     # Нужно найти все значения функций Беллмана на последнем временном слое - T
-    # Там они равны соответственно функции g(x)
-    B_matr[x_point][T] = g(x_point)
+    # Там они равны соответственно функции support_price_g(x)
+    B_matr[x_point][T] = support_price_g(x_point)
 
 for t in range(T - 1, -1, -1):
     current_x_points = sorted(x_points[t])
@@ -48,31 +39,43 @@ for t in range(T - 1, -1, -1):
 
     for i in range(current_points_len):
         x_point = current_x_points[i]
-        save_value = bellman_fun(x_point, t, 1)
-        out_value = bellman_fun(x_point, t, 0)
+        save_value = bellman_fun(x_point, t, 1, B_matr)
+        out_value = bellman_fun(x_point, t, 0, B_matr)
 
-        if save_value <= out_value:
+        if save_value < out_value:
             B_matr[x_point][t] = save_value
             U_values[t][i] = 1
         else:
             B_matr[x_point][t] = out_value
             U_values[t][i] = 0
 
-U_vector = np.zeros(T)
-U_vector[0] = U_values[0][0]
+U_solution = np.zeros(T)
+U_solution[0] = U_values[0][0]
+x_solution = np.zeros(T)
+x_solution[0] = start_age - 1
 prev_x = list(x_points[0])[0]
 
 
 for i in range(1, T):
-    prev_U = U_vector[i - 1]
-    curr_x = 0
+    prev_U = U_solution[i - 1]
     curr_x_values = list(x_points[i])
+    curr_x = f(prev_x, prev_U)
 
-    if prev_U is 1:
-        curr_x = prev_x + 1
+
+    x_solution[i] = curr_x
 
     curr_x_index = curr_x_values.index(curr_x)
 
-    U_vector[i] = U_values[i][curr_x_index]
+    U_solution[i] = U_values[i][curr_x_index]
+    prev_x = curr_x
 
-print(U_vector)
+g_vector = [support_price_g(i) for i in range(T + 1)]
+quality = quality(U_solution, equipment_price)
+equipment_ages = build_x(U_solution)
+
+print('X = {}'.format(equipment_ages))
+print('Support prices - g(x) = {}'.format(g_vector))
+print('Quality = {}'.format(quality))
+print('Control: U = {}'.format(U_solution))
+
+
