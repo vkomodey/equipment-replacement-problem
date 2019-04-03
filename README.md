@@ -1,1 +1,1 @@
-### Equipment Replacement Problem
+### Manufacture Optimization Problem
