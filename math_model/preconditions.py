@@ -17,7 +17,7 @@ capital_priority_alpha = 0.3
 
 production_cost_q_v = [14, 15]
 
-period_time_T = 3
+period_time_T = 6
 
 # Production functions are linear, so it is only required to know coefficients for them
 production_lin_coeff_v = [1.2, 1.7]

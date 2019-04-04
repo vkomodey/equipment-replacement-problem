@@ -26,17 +26,21 @@ class BellmanContainer:
             "bellman_value": boundary_bellman_fn(capital_v)
         } for capital_v in capital_discrete_values ]
 
+        self.grid = np.array([], dtype="object")
+        self.grid[-1] = boundary_values
 
-    def build_last_layer(self):
+
+    def build_layer(self, t):
         for capital_v in capital_discrete_values:
             maximum_value = -float('inf')
+            control = None
             for control_v in control_discrete_values:
                 if is_capital_feasible(capital_v, control_v) == False:
                     continue
                 
                 next_capital_v = approximate_capital(next_capital_F(capital_v, control_v))
                 bellman_value = None
-                for bellman_v in self.boundary_values:
+                for bellman_v in self.grid[t]:
                     if next_capital_v[0] == bellman_v["capital"][0] and next_capital_v[1] == bellman_v["capital"][0]:
                         bellman_value = bellman_v["bellman_value"]
 
@@ -44,4 +48,15 @@ class BellmanContainer:
 
                 if res > maximum_value:
                     maximum_value = res
-            print(maximum_value)
+                    control = control_v
+            self.grid[t].append(BellmanValue(control, maximum_value))
+
+    def build_layers(self):
+        for t in range(T - 1):
+            self.build_layer(t)
+
+    def find_control(self, t, capital):
+        return np.argwhere(self.grid[t] == capital).get_control()
+
+    def get_grid(self):
+        return self.grid
