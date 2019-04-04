@@ -1,15 +1,13 @@
 from math_model.preconditions import *
 
 # The capital for the next time moment
-def capital_fn(product_type_index):
-    def calculate_capital(prev_K_v, prev_control_u_v):
+def next_capital_F(capital_v, control_v):
+    def calc_capital(product_type_index):
         amortization = 1 - amortization_mu_v[product_type_index]
         tax = 1 - tax_ro
-        bK0 = b[0] * prev_K_v[0]
-        bK1 = b[1] * prev_K_v[1]
+        bK0 = b[0] * capital_v[0]
+        bK1 = b[1] * capital_v[1]
 
-        return amortization * prev_K_v[product_type_index] + tax * (bK0 + bK1) * prev_control_u_v[product_type_index]
+        return amortization * capital_v[product_type_index] + tax * (bK0 + bK1) * control_v[product_type_index]
 
-    return calculate_capital
-
-capital_K_v = [capital_fn(0), capital_fn(1)]
+    return [calc_capital(0), calc_capital(1)]

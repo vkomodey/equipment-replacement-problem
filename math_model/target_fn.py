@@ -3,6 +3,15 @@ from math_model.preconditions import *
 def phi(capital_v):
     return capital_priority_alpha * sum(capital_v) / ( 1 + discounting_bet_i )**period_time_T
 
+def f_0(capital_v, control_v, t):
+    capital_member = (b[0]*capital_v[0] + b[1]*capital_v[1])
+    discounting_member = (1+discounting_bet_i)**t
+    tax_member = (1 - tax_ro)
+    control_member = (2 - control_v[0] - control_v[1])
+
+    return tax_member * capital_member * control_member / discounting_member
+
+
 def target_function(all_capitals, all_controls):
     capitals = all_capitals[0:-1]
     controls = all_controls[0:-1]
